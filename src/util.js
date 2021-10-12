@@ -6,7 +6,7 @@ function getNumItems() {
       return parsed
     }
   }
-  return 100
+  return 200
 }
 
 export const NUM_ITEMS = getNumItems()
