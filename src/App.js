@@ -1,10 +1,14 @@
 import React, { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 
-import { Sprites } from './Planes'
+import { Sprites } from './Sprites'
 
 export default function App() {
   const sprites = React.useRef()
+
+  setInterval(() => {
+    sprites.current?.create()
+  }, 10)
 
   return (
     <div

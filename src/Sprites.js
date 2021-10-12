@@ -5,7 +5,7 @@ import Tex0 from './images/heart.png'
 import Tex1 from './images/clap.png'
 import Tex2 from './images/thumbs.png'
 
-const NUM_ITEMS = 10
+const NUM_ITEMS = 100
 
 function getEmptyArray(size) {
   return new Array(size).fill()
