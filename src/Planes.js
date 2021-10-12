@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 import { useFrame, useLoader } from '@react-three/fiber'
 import React, { useImperativeHandle, useRef } from 'react'
-import Img from './heart.png'
+import Tex0 from './images/heart.png'
+import Tex1 from './images/clap.png'
+import Tex2 from './images/thumbs.png'
 
 const NUM_ITEMS = 10
 
@@ -13,26 +15,15 @@ const POSITION_RANGE = 4
 const X_SPEED_RANGE = 1.5
 const ROTATION_SPEED_RANGE = 1
 
-/**
- * TODOs
- * - [x] 매 프레임마다 위치 바뀌게 하기
- * - [x] 각 plane에 다른 색상 적용하기
- * - [x] 각 plane에 다른 opacity 적용하기
- * - [x] 매 프레임마다 opacity 바뀌게 하기
- * - [x] 투명 텍스처 적용하기
- * - [x] 점점 사라지게 하기
- * - [x] y축 가속 운동 처리
- * - [ ] 회전 처리
- * - [ ] 여러 이미지 중 하나 랜덤 어사인해 사용
- */
 function _Planes(_, ref) {
-  const [texture] = useLoader(THREE.TextureLoader, [Img])
+  const [tex0, tex1, tex2] = useLoader(THREE.TextureLoader, [Tex0, Tex1, Tex2])
   const meshRef = useRef()
   const shaderMaterialRef = useRef()
   const positionArray = useRef(Float32Array.from(getEmptyArray(NUM_ITEMS * 3).map(() => 0))).current
   const timeArray = useRef(Float32Array.from(getEmptyArray(NUM_ITEMS)).map(() => 0)).current
   const xSpeedArray = useRef(Float32Array.from(getEmptyArray(NUM_ITEMS)).map(() => 0)).current
   const rotationSpeedArray = useRef(Float32Array.from(getEmptyArray(NUM_ITEMS)).map(() => 0)).current
+  const itemTypeArray = useRef(Int32Array.from(getEmptyArray(NUM_ITEMS)).map(() => 0)).current
   const count = useRef(0)
   const now = useRef(0)
 
@@ -46,6 +37,7 @@ function _Planes(_, ref) {
 
       xSpeedArray[idx] = (Math.random() - 0.5) * X_SPEED_RANGE
       rotationSpeedArray[idx] = (Math.random() - 0.5) * ROTATION_SPEED_RANGE
+      itemTypeArray[idx] = Math.floor(Math.random() * 3)
 
       count.current = (idx + 1) % NUM_ITEMS
       if (meshRef.current) {
@@ -53,6 +45,7 @@ function _Planes(_, ref) {
         meshRef.current.geometry.attributes.startTime.needsUpdate = true
         meshRef.current.geometry.attributes.xSpeed.needsUpdate = true
         meshRef.current.geometry.attributes.rotationSpeed.needsUpdate = true
+        meshRef.current.geometry.attributes.itemType.needsUpdate = true
       }
     }
   }))
@@ -72,6 +65,7 @@ function _Planes(_, ref) {
         <instancedBufferAttribute attachObject={['attributes', 'startTime']} args={[timeArray, 1]} />
         <instancedBufferAttribute attachObject={['attributes', 'xSpeed']} args={[xSpeedArray, 1]} />
         <instancedBufferAttribute attachObject={['attributes', 'rotationSpeed']} args={[rotationSpeedArray, 1]} />
+        <instancedBufferAttribute attachObject={['attributes', 'itemType']} args={[itemTypeArray, 1]} />
       </planeGeometry>
       <shaderMaterial
         ref={(ref) => {
@@ -85,9 +79,17 @@ function _Planes(_, ref) {
         args={[
           {
             uniforms: {
-              tex: {
+              tex0: {
                 type: 't',
-                value: texture
+                value: tex0
+              },
+              tex1: {
+                type: 't',
+                value: tex1
+              },
+              tex2: {
+                type: 't',
+                value: tex2
               },
               time: {
                 type: 'float',
@@ -100,8 +102,10 @@ function _Planes(_, ref) {
                 attribute float startTime;
                 attribute float xSpeed;
                 attribute float rotationSpeed;
+                attribute int itemType;
                 varying vec2 vUv;
                 varying float alpha;
+                flat varying lowp int texId;
 
                 mat2 rotate2d(float _angle){
                   return mat2(cos(_angle), -sin(_angle),
@@ -119,15 +123,28 @@ function _Planes(_, ref) {
                   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 0.0, 1.0);
                   vUv = uv;
                   alpha = 1.0 - clamp(t * 0.7, 0.0, 1.0);
+                  texId = itemType;
                 }
               `,
             fragmentShader: `
                 varying vec2 vUv;
                 varying float alpha;
-                uniform sampler2D tex;
+                flat varying lowp int texId;
+                uniform sampler2D tex0;
+                uniform sampler2D tex1;
+                uniform sampler2D tex2;
 
                 void main() {
-                  gl_FragColor = texture2D(tex, vUv);
+                  switch (texId) {
+                    case 0:
+                      gl_FragColor = texture2D(tex0, vUv);
+                      break;   
+                    case 1:
+                      gl_FragColor = texture2D(tex1, vUv);
+                      break;
+                    default:
+                      gl_FragColor = texture2D(tex2, vUv);
+                  }
                   gl_FragColor.a = alpha * gl_FragColor.a;
                 }
               `
