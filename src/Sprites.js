@@ -4,8 +4,7 @@ import React, { useImperativeHandle, useRef } from 'react'
 import Tex0 from './images/heart.png'
 import Tex1 from './images/clap.png'
 import Tex2 from './images/thumbs.png'
-
-const NUM_ITEMS = 100
+import { NUM_ITEMS } from './util'
 
 function getEmptyArray(size) {
   return new Array(size).fill()
@@ -29,7 +28,7 @@ function _Sprites(_, ref) {
 
   useImperativeHandle(ref, () => ({
     create() {
-      const idx = count.current
+      const idx = count.current % NUM_ITEMS
       timeArray[idx] = now.current
       positionArray[idx * 3] = (Math.random() - 0.5) * POSITION_RANGE
       positionArray[idx * 3 + 1] = (Math.random() - 0.5) * POSITION_RANGE
@@ -155,4 +154,4 @@ function _Sprites(_, ref) {
   )
 }
 
-export const Sprites = React.forwardRef(_Sprites)
+export const Sprites = React.memo(React.forwardRef(_Sprites))
