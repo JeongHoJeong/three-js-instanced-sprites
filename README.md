@@ -1,2 +1,2 @@
-# three-js-instanced-sprites
+# three-learn-shader
 Created with CodeSandbox
