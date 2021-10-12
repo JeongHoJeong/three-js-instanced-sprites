@@ -99,8 +99,14 @@ function _Planes(_, ref) {
                 attribute vec3 planePos;
                 attribute float startTime;
                 attribute float xSpeed;
+                attribute float rotationSpeed;
                 varying vec2 vUv;
                 varying float alpha;
+
+                mat2 rotate2d(float _angle){
+                  return mat2(cos(_angle), -sin(_angle),
+                              sin(_angle),  cos(_angle));
+                }
 
                 void main() {
                   float v0 = 1.2;
@@ -108,8 +114,9 @@ function _Planes(_, ref) {
                   float t = time - startTime;
                   float y = v0 * t + 0.5 * a * t * t;
                   float x = xSpeed * t;
-                  vec4 pos = vec4(position + planePos, 1.0) + vec4(x, y, 0, 0);
-                  gl_Position = projectionMatrix * modelViewMatrix * pos;
+                  mat2 rot = rotate2d(t * rotationSpeed);
+                  vec2 pos = vec2(x, y) + rot * position.xy + planePos.xy;
+                  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 0.0, 1.0);
                   vUv = uv;
                   alpha = 1.0 - clamp(t * 0.7, 0.0, 1.0);
                 }
