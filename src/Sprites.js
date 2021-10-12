@@ -15,7 +15,7 @@ const POSITION_RANGE = 4
 const X_SPEED_RANGE = 1.5
 const ROTATION_SPEED_RANGE = 1
 
-function _Planes(_, ref) {
+function _Sprites(_, ref) {
   const [tex0, tex1, tex2] = useLoader(THREE.TextureLoader, [Tex0, Tex1, Tex2])
   const meshRef = useRef()
   const shaderMaterialRef = useRef()
@@ -155,4 +155,4 @@ function _Planes(_, ref) {
   )
 }
 
-export const Planes = React.forwardRef(_Planes)
+export const Sprites = React.forwardRef(_Sprites)
